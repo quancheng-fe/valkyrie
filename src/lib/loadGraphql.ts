@@ -4,7 +4,7 @@ import { Container, ContainerInstance } from 'typedi'
 import globby from 'globby'
 import { ApolloServer, Config } from 'apollo-server-koa'
 import { GraphQLSchema } from 'graphql'
-import { loadFunction } from '../types'
+import { loadFromPath } from '../types'
 
 export const ERR_MESSAGE = {
   RESOLVER_FILES_NOT_FOUND: 'resolver files not found!'
@@ -28,13 +28,17 @@ export const loadSchema = async (
   })
 }
 
-export const loadGraphql: loadFunction<Config, ApolloServer> = async (
+export const loadGraphql: loadFromPath<Config, ApolloServer> = async (
   path,
   app,
   config
 ) => {
   const schema = await loadSchema(path)
-  const gqlServer = new ApolloServer({ schema, ...config })
+  const gqlServer = new ApolloServer({
+    schema,
+    ...config,
+    context: ({ ctx }) => ctx
+  })
   gqlServer.applyMiddleware({ app })
   return gqlServer
 }

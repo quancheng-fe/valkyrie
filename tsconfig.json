@@ -17,5 +17,5 @@
     },
     "lib": ["esnext"]
   },
-  "include": ["src/**/*", "typings/**/*"]
+  "include": ["src/**/*", "typings/**/*", "test/**/*"]
 }

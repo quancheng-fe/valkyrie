@@ -15,6 +15,7 @@ beforeAll(async () => {
   agent = request.agent(server.callback())
 })
 
+
 it('will work', async () => {
   const response = await agent.get('/graphql')
 

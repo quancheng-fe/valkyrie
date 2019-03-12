@@ -1,5 +1,5 @@
 import Koa from 'koa'
-export type loadFunction<Config, ReturnType> = (
+export type loadFromPath<Config, ReturnType> = (
   path: string,
   app: Koa,
   config?: Config

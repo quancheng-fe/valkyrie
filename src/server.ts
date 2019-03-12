@@ -1,7 +1,9 @@
 import Koa from 'koa'
+import pino, { Logger } from 'pino'
 import { Config } from 'apollo-server-koa'
 import { loadGraphql } from './lib/loadGraphql'
 import { loadMiddlewares } from './lib/loadMiddleware'
+import { loadPlugin } from './lib/loadPlugin'
 
 export interface ServerOptions {
   root: string
@@ -13,9 +15,12 @@ export const createServer = async (
   app?: Koa
 ): Promise<Koa> => {
   app = app || new Koa()
+  const load = loadPlugin(app)
 
-  await loadGraphql(conf.root, app, conf.graphqlServer)
   await loadMiddlewares(conf.root, app)
+  await loadGraphql(conf.root, app, conf.graphqlServer)
+
+  load('logger', <Logger>() => pino({}))
 
   return app
 }

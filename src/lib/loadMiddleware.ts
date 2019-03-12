@@ -1,8 +1,8 @@
 import { resolve } from 'path'
 import globby from 'globby'
-import { loadFunction } from '../types'
+import { loadFromPath } from '../types'
 
-export const loadMiddlewares: loadFunction<null, void> = async (
+export const loadMiddlewares: loadFromPath<null, void> = async (
   path,
   app
 ): Promise<void> => {
