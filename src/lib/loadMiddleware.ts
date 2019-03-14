@@ -1,13 +1,17 @@
 import { resolve } from 'path'
 import globby from 'globby'
-import { loadFunction } from '../types'
+import { loadFromPath } from '../types'
+import { Middleware } from 'koa'
 
-export const loadMiddlewares: loadFunction<null, void> = async (
+export const loadMiddlewares: loadFromPath<null, void> = async (
   path,
   app
 ): Promise<void> => {
   const middlewareFiles = await globby(resolve(path, './**/**.middleware.**'))
   middlewareFiles.forEach(file => {
-    app.use(require(file))
+    const mod = require(file) as any
+    Object.keys(mod).forEach((funName: string) => {
+      app.use(mod[funName] as Middleware)
+    })
   })
 }

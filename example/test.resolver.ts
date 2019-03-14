@@ -1,4 +1,5 @@
-import { Resolver, ObjectType, Field, Query, Arg, ID, Ctx } from 'type-graphql'
+import { Resolver, ObjectType, Field, Query, ID, Ctx } from 'type-graphql'
+import { IContext } from '../src'
 
 @ObjectType()
 class Recipe {
@@ -21,8 +22,8 @@ class Recipe {
 @Resolver(of => Recipe)
 export class RecipeResolver {
   @Query(returns => Recipe, { nullable: true })
-  public async recipe(@Ctx() ctx: any): Promise<Recipe> {
-    ctx.logger.info('123')
+  public async recipe(@Ctx() ctx: IContext): Promise<Recipe> {
+    ctx.logger.info(ctx.path)
     return {
       id: '1',
       title: 'test',
