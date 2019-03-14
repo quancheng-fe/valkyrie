@@ -1,15 +1,16 @@
 import Koa, { Context } from 'koa'
 import { Logger } from 'pino'
-import { ServerOptions } from './server'
-import { NodeBaseConfig } from './lib/loadConfig'
 import { Connection } from 'typeorm'
 import { Redis } from 'ioredis'
-import zipkin = require('zipkin')
+import zipkin from 'zipkin'
+import * as Sentry from '@sentry/node'
+import { ServerOptions } from './server'
 
 export interface IContext extends Context {
   logger: Logger
   connection: Connection
   redis: Redis
+  sentry?: Sentry.NodeClient
   zipkin?: {
     tracer: zipkin.Tracer
     pid: zipkin.TraceId
@@ -20,5 +21,5 @@ export interface IContext extends Context {
 export type loadFromPath<Config, ReturnType> = (
   path: string,
   app: Koa,
-  config?: ServerOptions & NodeBaseConfig
+  config?: ServerOptions
 ) => Promise<ReturnType> | ReturnType

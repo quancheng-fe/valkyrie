@@ -1,34 +1,34 @@
+import http from 'http'
 import Koa from 'koa'
 import pino from 'pino'
 import { config as envConfig } from 'dotenv'
 import { Config } from 'apollo-server-koa'
-import Redis, { RedisOptions } from 'ioredis'
-import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions'
+import Redis from 'ioredis'
 
 import { loadGraphql } from './lib/loadGraphql'
 import { loadMiddlewares } from './lib/loadMiddleware'
 import { loadPlugin } from './lib/loadPlugin'
-import { loadConfigFromACM } from './lib/loadConfig'
+import { loadConfigFromACM, NodeBaseConfig } from './lib/loadConfig'
 import { loadORM } from './lib/loadORM'
 import { loadSentry } from './lib/loadSentry'
+import { setupEureka } from './lib/loadGrpc'
+import { gracefulShutDown } from './lib/gracefulShutDown'
 import { errorHandler } from './middleware/errhandler'
 import { zipkinTracer } from './middleware/tracer'
-import { setupEureka } from './lib/loadGrpc';
 
-export interface ServerOptions {
+export interface ServerOptions extends Partial<NodeBaseConfig> {
   name: string
   root: string
   graphqlServer: Config
-  redis?: RedisOptions
-  db?: MysqlConnectionOptions
-  zipkin?: string
+  onShuttingDown?: Function
 }
 
 export const createServer = async (
   conf: ServerOptions,
   app?: Koa
-): Promise<Koa> => {
+): Promise<http.Server> => {
   envConfig()
+
   app = app || new Koa()
 
   const {
@@ -83,17 +83,24 @@ export const createServer = async (
   // load middlewares from files named '**.resolver.**'
   await loadGraphql(root, app, appConfig)
 
-  await setupEureka(appConfig)
+  const eurekaClient = await setupEureka(appConfig)
 
   // print error message
   app.on('error', err => {
     logger.error('server error', err)
   })
 
-  // graceful shutdown
-  process.on('SIGTERM', sig => {
-    console.log(sig)
-  })
+  const server = http.createServer(app.callback())
 
-  return app
+  // graceful shutdown
+  process.on(
+    'SIGTERM',
+    gracefulShutDown(server, logger, {
+      onShutDown() {
+        eurekaClient.stop()
+      }
+    })
+  )
+
+  return server
 }
