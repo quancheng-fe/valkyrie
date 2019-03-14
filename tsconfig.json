@@ -15,7 +15,8 @@
     "paths": {
       "*": ["node_modules/*", "src/types/*"]
     },
-    "lib": ["esnext"]
+    "lib": ["esnext", "dom"]
   },
-  "include": ["src/**/*", "typings/**/*", "test/**/*"]
+  "include": ["src/**/*", "typings/**/*"],
+  "exclude": ["test/**/*"]
 }

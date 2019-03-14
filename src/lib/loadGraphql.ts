@@ -1,9 +1,9 @@
 import { resolve } from 'path'
-import { buildSchema } from 'type-graphql'
-import { Container, ContainerInstance } from 'typedi'
+import { buildSchema, ContainerType } from 'type-graphql'
 import globby from 'globby'
 import { ApolloServer, Config } from 'apollo-server-koa'
 import { GraphQLSchema } from 'graphql'
+import Container from 'typedi'
 import { loadFromPath } from '../types'
 
 export const ERR_MESSAGE = {
@@ -12,7 +12,7 @@ export const ERR_MESSAGE = {
 
 export const loadSchema = async (
   path: string,
-  container?: ContainerInstance
+  container?: ContainerType
 ): Promise<GraphQLSchema> => {
   const resolverFiles = await globby(resolve(path, './**/**.resolver.**'))
 
@@ -24,7 +24,7 @@ export const loadSchema = async (
     resolvers: resolverFiles.map(file => {
       return require(file)
     }),
-    container: container || Container
+    container
   })
 }
 
@@ -33,10 +33,10 @@ export const loadGraphql: loadFromPath<Config, ApolloServer> = async (
   app,
   config
 ) => {
-  const schema = await loadSchema(path)
+  const schema = await loadSchema(path, Container)
   const gqlServer = new ApolloServer({
     schema,
-    ...config,
+    ...config.graphqlServer,
     context: ({ ctx }) => ctx
   })
   gqlServer.applyMiddleware({ app })
