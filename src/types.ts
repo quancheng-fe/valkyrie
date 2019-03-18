@@ -4,6 +4,7 @@ import { Connection } from 'typeorm'
 import { Redis } from 'ioredis'
 import zipkin from 'zipkin'
 import * as Sentry from '@sentry/node'
+import * as jspb from 'google-protobuf'
 import { ServerOptions } from './server'
 
 export interface IContext extends Context {
@@ -23,3 +24,6 @@ export type loadFromPath<Config, ReturnType> = (
   app: Koa,
   config?: ServerOptions
 ) => Promise<ReturnType> | ReturnType
+
+export type GrpcService<Client> = Client &
+  Record<string, (req: jspb.Message) => Promise<jspb.Message>>
