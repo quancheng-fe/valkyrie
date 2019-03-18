@@ -7,7 +7,7 @@ export const loadMiddlewares: loadFromPath<null, void> = async (
   path,
   app
 ): Promise<void> => {
-  const middlewareFiles = await globby(resolve(path, './**/**.middleware.**'))
+  const middlewareFiles = await globby(resolve(path, './**/**.middleware.(js|ts)'))
   middlewareFiles.forEach(file => {
     const mod = require(file) as any
     Object.keys(mod).forEach((funName: string) => {

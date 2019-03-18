@@ -14,7 +14,7 @@ export const loadSchema = async (
   path: string,
   container?: ContainerType
 ): Promise<GraphQLSchema> => {
-  const resolverFiles = await globby(resolve(path, './**/**.resolver.**'))
+  const resolverFiles = await globby(resolve(path, './**/**.resolver.(js|ts)'))
 
   if (!resolverFiles.length) {
     throw new Error(ERR_MESSAGE.RESOLVER_FILES_NOT_FOUND)

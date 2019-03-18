@@ -10,7 +10,7 @@ export const loadORM: loadFromPath<
   Connection | null
 > = async (path, app, config) => {
   useContainer(Container)
-  const entitiesFiles = await globby(resolve(path, './**/**.entity.**'))
+  const entitiesFiles = await globby(resolve(path, './**/**.entity.(js|ts)'))
   const connection = await createConnection({
     ...config.db,
     entities: entitiesFiles
