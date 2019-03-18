@@ -26,4 +26,9 @@ export type loadFromPath<Config, ReturnType> = (
 ) => Promise<ReturnType> | ReturnType
 
 export type GrpcService<Client> = Client &
-  Record<string, (req: jspb.Message) => Promise<jspb.Message>>
+  Record<
+    string,
+    <Request extends jspb.Message, Response extends jspb.Message>(
+      req: Request
+    ) => Promise<Response>
+  >
