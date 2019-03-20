@@ -1,6 +1,6 @@
 {
   "name": "@quancheng/valkyriejs",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "a tiny and typed graphql-server",
   "main": "dist/index.js",
   "repository": "git@github.com:quancheng-fe/valkyrie.git",
