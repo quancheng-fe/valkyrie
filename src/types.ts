@@ -21,7 +21,7 @@ export interface IContext extends Context {
 
 export type loadFromPath<Config, ReturnType> = (
   path: string,
-  app: Koa,
+  app: Koa & Record<string, any> & { logger?: Logger },
   config?: ServerOptions
 ) => Promise<ReturnType> | ReturnType
 

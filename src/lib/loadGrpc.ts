@@ -24,7 +24,7 @@ export const setupEureka = (
     eurekaClient = new Eureka({
       instance: {
         app: config.name,
-        hostName: 'localhost',
+        hostName: ip.address(),
         ipAddr: ip.address(),
         port: {
           $: 8080,

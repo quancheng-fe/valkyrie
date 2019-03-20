@@ -13,11 +13,11 @@ export const ERR_MESSAGE = {
 export const loadSchema = async (
   path: string,
   container?: ContainerType
-): Promise<GraphQLSchema> => {
+): Promise<GraphQLSchema | null> => {
   const resolverFiles = await globby(resolve(path, './**/**.resolver.(js|ts)'))
 
   if (!resolverFiles.length) {
-    throw new Error(ERR_MESSAGE.RESOLVER_FILES_NOT_FOUND)
+    return null
   }
 
   return buildSchema({
@@ -34,6 +34,12 @@ export const loadGraphql: loadFromPath<Config, ApolloServer> = async (
   config
 ) => {
   const schema = await loadSchema(path, Container)
+  if (!schema) {
+    app.logger.info(
+      'no resolver files found, will skip graphql server initialization'
+    )
+    return null
+  }
   const gqlServer = new ApolloServer({
     schema,
     ...config.graphqlServer,

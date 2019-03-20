@@ -1,6 +1,6 @@
 {
   "watch": ["src", "example"],
   "ext": "ts",
-  "ignore": ["**/*.spec.ts", "**/*.test.ts"],
+  "ignore": ["**/*.spec.ts", "**/*.test.ts", "example/pages/*"],
   "exec": "ts-node --project tsconfig.json --pretty ./example/index.ts"
 }

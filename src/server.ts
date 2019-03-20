@@ -1,9 +1,10 @@
 import http from 'http'
-import Koa from 'koa'
-import pino from 'pino'
+import Koa, { Middleware } from 'koa'
+import pino, { Logger } from 'pino'
 import { config as envConfig } from 'dotenv'
 import { Config } from 'apollo-server-koa'
 import Redis from 'ioredis'
+import next from 'next'
 
 import { loadGraphql } from './lib/loadGraphql'
 import { loadMiddlewares } from './lib/loadMiddleware'
@@ -15,6 +16,9 @@ import { setupEureka } from './lib/loadGrpc'
 import { gracefulShutDown } from './lib/gracefulShutDown'
 import { errorHandler } from './middleware/errhandler'
 import { zipkinTracer } from './middleware/tracer'
+import { existsSync } from 'fs'
+import { resolve } from 'path'
+import { object } from 'prop-types'
 
 export interface ServerOptions extends Partial<NodeBaseConfig> {
   name: string
@@ -25,7 +29,7 @@ export interface ServerOptions extends Partial<NodeBaseConfig> {
 
 export const createServer = async (
   conf: ServerOptions,
-  app?: Koa
+  app?: Koa & Record<string, any> & { logger?: Logger }
 ): Promise<http.Server> => {
   envConfig()
 
@@ -47,6 +51,8 @@ export const createServer = async (
       levelFirst: true
     }
   })
+
+  app.logger = logger
 
   // init loadPlugin factory function
   const load = loadPlugin(app)
@@ -84,6 +90,19 @@ export const createServer = async (
   await loadGraphql(root, app, appConfig)
 
   const eurekaClient = await setupEureka(appConfig)
+
+  if (existsSync(resolve(root, 'pages'))) {
+    app.logger.info('page dir found, start next server')
+    const n = next({ dev: true, dir: resolve(root) })
+    const handle = n.getRequestHandler()
+
+    app.use(async (ctx) => {
+      await handle(ctx.req, ctx.res)
+      ctx.respond = false
+    })
+
+    await n.prepare()
+  }
 
   // print error message
   app.on('error', err => {

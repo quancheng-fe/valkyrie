@@ -17,8 +17,10 @@
     "@types/graphql": "^14.0.7",
     "@types/ioredis": "^4.0.10",
     "@types/koa": "^2.0.48",
+    "@types/next": "^8.0.3",
     "@types/pino": "^5.8.5",
     "@types/protobufjs": "^6.0.0",
+    "@zeit/next-typescript": "^1.1.1",
     "acm-client": "^3.1.0",
     "apollo-server-koa": "^2.4.8",
     "bluebird": "^3.5.3",
@@ -33,6 +35,7 @@
     "koa": "^2.7.0",
     "lodash": "^4.17.11",
     "lodash.isfunction": "^3.0.9",
+    "next": "^8.0.3",
     "pino": "^5.11.1",
     "pino-pretty": "^2.5.0",
     "type-graphql": "^0.17.0",
@@ -52,6 +55,7 @@
     "@types/lodash": "^4.14.123",
     "@types/lodash.isfunction": "^3.0.6",
     "@types/node": "^11.11.0",
+    "@types/react": "^16.8.8",
     "@types/sleep": "^0.0.7",
     "@types/supertest": "^2.0.7",
     "@types/zipkin-context-cls": "^0.11.2",
@@ -62,6 +66,8 @@
     "grpc": "^1.19.0",
     "jest": "^24.3.1",
     "nodemon": "^1.18.10",
+    "react": "^16.8.4",
+    "react-dom": "^16.8.4",
     "sleep": "^6.0.0",
     "supertest": "^4.0.0",
     "ts-jest": "^24.0.0",
@@ -70,6 +76,8 @@
     "typescript": "^3.3.3333"
   },
   "peerDependencies": {
-    "grpc": "^1.19.0"
+    "grpc": "^1.19.0",
+    "react": "^16.8.4",
+    "react-dom": "^16.8.4"
   }
 }
