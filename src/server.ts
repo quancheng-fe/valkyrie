@@ -93,7 +93,7 @@ export const createServer = async (
 
   if (existsSync(resolve(root, 'pages'))) {
     app.logger.info('page dir found, start next server')
-    const n = next({ dev: true, dir: resolve(root) })
+    const n = next({ dev: process.env.NODE_ENV !== 'production', dir: resolve(root), quiet: true })
     const handle = n.getRequestHandler()
 
     app.use(async (ctx) => {
