@@ -1,10 +1,14 @@
 import http from 'http'
-import Koa, { Middleware } from 'koa'
+import { existsSync } from 'fs'
+import { resolve } from 'path'
+import Koa from 'koa'
+import _ from 'lodash'
 import pino, { Logger } from 'pino'
 import { config as envConfig } from 'dotenv'
 import { Config } from 'apollo-server-koa'
 import Redis from 'ioredis'
 import next from 'next'
+import Route from 'next-routes'
 
 import { loadGraphql } from './lib/loadGraphql'
 import { loadMiddlewares } from './lib/loadMiddleware'
@@ -16,9 +20,6 @@ import { setupEureka } from './lib/loadGrpc'
 import { gracefulShutDown } from './lib/gracefulShutDown'
 import { errorHandler } from './middleware/errhandler'
 import { zipkinTracer } from './middleware/tracer'
-import { existsSync } from 'fs'
-import { resolve } from 'path'
-import { object } from 'prop-types'
 
 export interface ServerOptions extends Partial<NodeBaseConfig> {
   name: string
@@ -93,10 +94,33 @@ export const createServer = async (
 
   if (existsSync(resolve(root, 'pages'))) {
     app.logger.info('page dir found, start next server')
-    const n = next({ dev: process.env.NODE_ENV !== 'production', dir: resolve(root), quiet: true })
-    const handle = n.getRequestHandler()
+    const n = next({
+      dev: process.env.NODE_ENV !== 'production',
+      dir: resolve(root),
+      quiet: true
+    })
 
-    app.use(async (ctx) => {
+    const routes = existsSync(resolve(root, 'routes.ts'))
+    let handle: any
+
+    if (routes) {
+      const router = new Route()
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { default: routeMap } = await import(resolve(root, 'routes.ts'))
+      console.log(routeMap)
+      Object.keys(routeMap).forEach(path => {
+        if (_.isObject(routeMap[path])) {
+          router.add(routeMap[path])
+        } else {
+          router.add(path, routeMap[path])
+        }
+      })
+      handle = router.getRequestHandler(n)
+    } else {
+      handle = n.getRequestHandler()
+    }
+
+    app.use(async ctx => {
       await handle(ctx.req, ctx.res)
       ctx.respond = false
     })
