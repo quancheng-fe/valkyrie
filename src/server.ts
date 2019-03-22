@@ -49,6 +49,8 @@ export const createServer = async (
     }
   })
 
+  logger.info('env: ', process.env)
+
   app.logger = logger
 
   // init loadPlugin factory function

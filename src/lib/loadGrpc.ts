@@ -23,11 +23,13 @@ export const setupEureka = (
   return new Promise((resolve, reject) => {
     eurekaClient = new Eureka({
       instance: {
-        app: config.name,
+        app: `${config.name}${
+          process.env.NODE_ENV !== 'production' ? ':dev' : ''
+        }`,
         hostName: ip.address(),
         ipAddr: ip.address(),
         port: {
-          $: 8080,
+          $: process.env.PORT || 8881,
           '@enabled': 'true'
         },
         vipAddress: `${config.name}.nodejs`,
