@@ -6,6 +6,7 @@ import BPromise from 'bluebird'
 import { Eureka } from 'eureka-js-client'
 import ip from 'ip'
 import { sample } from 'lodash'
+import { Logger } from 'pino'
 import { NodeBaseConfig } from './loadConfig'
 import { ServerOptions } from '../server'
 
@@ -18,7 +19,8 @@ interface GrpcClientClassOptions {
 let eurekaClient: Eureka
 
 export const setupEureka = (
-  config: ServerOptions & NodeBaseConfig
+  config: ServerOptions & NodeBaseConfig,
+  logger?: Logger
 ): Promise<Eureka> => {
   return new Promise((resolve, reject) => {
     eurekaClient = new Eureka({
@@ -44,6 +46,7 @@ export const setupEureka = (
         },
         heartbeatInterval: 5000,
         registryFetchInterval: 1000,
+        logger,
         shouldUseDelta: true
       }
     } as any)

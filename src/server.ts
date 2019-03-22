@@ -88,7 +88,7 @@ export const createServer = async (
   // load middlewares from files named '**.resolver.**'
   await loadGraphql(root, app, appConfig)
 
-  const eurekaClient = await setupEureka(appConfig)
+  const eurekaClient = await setupEureka(appConfig, logger)
 
   await loadNext(root, app)
 
