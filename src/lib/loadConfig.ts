@@ -23,7 +23,7 @@ export const loadConfigFromACM = async (
   const acmClient = new ACMClient(config)
   const configJSONString = await acmClient.getConfig(
     'node',
-    process.env.NODE_ENV || 'daily'
+    process.env.APP_ENV || 'daily'
   )
   return JSON.parse(configJSONString)
 }

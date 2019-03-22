@@ -1,4 +1,12 @@
-import { Resolver, ObjectType, Field, Query, ID, Ctx } from 'type-graphql'
+import {
+  Resolver,
+  ObjectType,
+  Field,
+  Query,
+  ID,
+  Ctx,
+  FieldResolver
+} from 'type-graphql'
 import { IContext } from '../src'
 
 @ObjectType()
@@ -16,7 +24,10 @@ class Recipe {
   public creationDate: Date
 
   @Field(type => [String])
-  public ingredients: string[]
+  public ingredients?: string[]
+
+  @Field(type => Recipe)
+  public childRecipe?: Recipe
 }
 
 @Resolver(of => Recipe)
@@ -28,8 +39,24 @@ export class RecipeResolver {
       id: '1',
       title: 'test',
       description: 'test',
-      creationDate: new Date(),
-      ingredients: ['jest', 'ts']
+      creationDate: new Date()
+      //ingredients: ['jest', 'ts']
+    }
+  }
+
+  @FieldResolver()
+  public async ingredients() {
+    return ['jest', 'ts']
+  }
+
+  @FieldResolver()
+  public async childRecipe(): Promise<Recipe> {
+    return {
+      id: '1',
+      title: 'test',
+      description: 'test',
+      creationDate: new Date()
+      //ingredients: ['jest', 'ts']
     }
   }
 }
