@@ -7,18 +7,19 @@ let agent: SuperTest<Test>
 
 beforeAll(async () => {
   const server = await createServer({
+    name: 'test-app',
     root: resolve(__dirname, './fixture/app/resolvers'),
     graphqlServer: {
-      introspection: true
+      introspection: true,
+      playground: true
     }
   })
-  agent = request.agent(server.callback())
+  agent = request.agent(server)
 })
 
-
 it('will work', async () => {
-  const response = await agent.get('/graphql')
-
-  expect(response.status).toBe(200)
+  const response = await agent.post('/graphql')
   expect(response.text).toBe('Hello World')
+  expect(response.body).toBe('Hello World')
+  expect(response.status).toBe(200)
 })

@@ -7,6 +7,8 @@ import { Eureka } from 'eureka-js-client'
 import ip from 'ip'
 import { sample } from 'lodash'
 import { Logger } from 'pino'
+import protobuf, { RPCImpl } from 'protobufjs'
+import { captureException } from '@sentry/core'
 import { NodeBaseConfig } from './loadConfig'
 import { ServerOptions } from '../server'
 
@@ -14,7 +16,12 @@ const pem = readFileSync(join(__dirname, '../../resource/server.pem'))
 
 interface GrpcClientClassOptions {
   name: string
+  credentialsExternal?: typeof credentials
 }
+
+type ClientType =
+  | (typeof grpc.Client)
+  | (protobuf.rpc.Service & { create: (rpcImpl: RPCImpl) => any })
 
 let eurekaClient: Eureka
 
@@ -24,6 +31,7 @@ export const setupEureka = (
 ): Promise<Eureka> => {
   return new Promise((resolve, reject) => {
     eurekaClient = new Eureka({
+      logger,
       instance: {
         app: `${config.name}${
           process.env.NODE_ENV !== 'production' ? ':dev' : ''
@@ -46,7 +54,6 @@ export const setupEureka = (
         },
         heartbeatInterval: 5000,
         registryFetchInterval: 1000,
-        logger,
         shouldUseDelta: true
       }
     } as any)
@@ -58,25 +65,41 @@ export const setupEureka = (
   })
 }
 
-const createGrpcClient = (
-  Client: typeof grpc.Client,
-  option?: GrpcClientClassOptions
-) => {
-  const sslCreds = credentials.createSsl(pem)
-  const instances = eurekaClient.getInstancesByAppId(option.name)
+const DEFAULT_OPTIONS = {
+  'grpc.ssl_target_name_override': 'grpc',
+  'grpc.default_authority': 'grpc',
+  'grpc.max_send_message_length': 8 * 1024 * 1024,
+  'grpc.max_receive_message_length': 8 * 1024 * 1024
+}
+
+const createGrpcClient = (Client: any, option?: GrpcClientClassOptions) => {
+  const nameArr = option.name.split('/')
+  const appId = nameArr[nameArr.length - 1]
+  const sslCreds = (option.credentialsExternal || credentials).createSsl(pem)
+  const instances = eurekaClient.getInstancesByAppId(appId)
   const randomInstance = sample(instances)
   const host = `${randomInstance.ipAddr}:${(randomInstance.port as any).$ + 1}`
-  const client = new Client(host, sslCreds, {
-    'grpc.ssl_target_name_override': 'grpc',
-    'grpc.default_authority': 'grpc',
-    'grpc.max_send_message_length': 8 * 1024 * 1024,
-    'grpc.max_receive_message_length': 8 * 1024 * 1024
-  })
+
+  if (Client.create) {
+    const ClientConstructor = (grpc as any).makeGenericClientConstructor({})
+    const client = new ClientConstructor(host, sslCreds, DEFAULT_OPTIONS)
+    return Client.create((method: any, requestData: any, callback: any) => {
+      ;(client as any).makeUnaryRequest(
+        `/${nameArr[0]}/${method.name}`,
+        (argument: any) => argument,
+        (argument: any) => argument,
+        requestData,
+        new grpc.Metadata(),
+        callback
+      )
+    })
+  }
+  const client = new Client(host, sslCreds, DEFAULT_OPTIONS)
   return BPromise.promisifyAll(client)
 }
 
 export const InjectGrpcService = (
-  Client: typeof grpc.Client,
+  Client: any,
   option?: GrpcClientClassOptions
 ): Function => (
   target: Record<string, any>,
@@ -88,7 +111,12 @@ export const InjectGrpcService = (
     propertyName: propertyName,
     index: index,
     value: () => {
-      return createGrpcClient(Client, option)
+      try {
+        return createGrpcClient(Client, option)
+      } catch (e) {
+        captureException(e)
+        return null
+      }
     }
   })
 }

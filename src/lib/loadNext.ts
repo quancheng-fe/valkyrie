@@ -2,10 +2,12 @@ import { resolve } from 'path'
 import { existsSync } from 'fs'
 import next from 'next'
 import Route from 'next-routes'
+import Router from 'koa-router'
 import _ from 'lodash'
 import { loadFromPath } from '../types'
 
 export const loadNext: loadFromPath<null, void> = async (root, app) => {
+  const koaRouter = new Router()
   const clientRoot = resolve(root, 'client')
   if (existsSync(clientRoot)) {
     app.logger.info('page dir found, start next server')
@@ -14,6 +16,8 @@ export const loadNext: loadFromPath<null, void> = async (root, app) => {
       dir: clientRoot,
       quiet: true
     })
+
+    await n.prepare()
 
     let handle: any
 
@@ -30,17 +34,21 @@ export const loadNext: loadFromPath<null, void> = async (root, app) => {
         }
       })
       handle = router.getRequestHandler(n)
-    } catch(e) {
-      app.logger.info("no route config")
+    } catch (e) {
+      app.logger.info('no route config')
       handle = n.getRequestHandler()
     }
 
-    app.use(async ctx => {
-      ctx.status = 200
+    koaRouter.get('*', async ctx => {
       await handle(ctx.req, ctx.res)
       ctx.respond = false
     })
 
-    await n.prepare()
+    app.use(async (ctx, next) => {
+      ctx.res.statusCode = 200
+      await next()
+    })
+
+    app.use(koaRouter.routes())
   }
 }

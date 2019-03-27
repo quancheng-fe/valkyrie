@@ -1,5 +1,6 @@
 import { resolve } from 'path'
 import { buildSchema, ContainerType } from 'type-graphql'
+import { captureException } from '@sentry/core'
 import globby from 'globby'
 import { ApolloServer, Config } from 'apollo-server-koa'
 import { GraphQLSchema } from 'graphql'
@@ -42,6 +43,10 @@ export const loadGraphql: loadFromPath<Config, ApolloServer> = async (
   }
   const gqlServer = new ApolloServer({
     schema,
+    formatError: err => {
+      captureException(err)
+      return err
+    },
     ...config.graphqlServer,
     context: ({ ctx }) => ctx
   })
