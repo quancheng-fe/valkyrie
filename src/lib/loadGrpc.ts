@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { join } from 'path'
 import grpc, { credentials } from 'grpc'
 import { readFileSync } from 'fs-extra'
@@ -7,7 +8,6 @@ import { Eureka } from 'eureka-js-client'
 import ip from 'ip'
 import { sample } from 'lodash'
 import { Logger } from 'pino'
-import protobuf, { RPCImpl } from 'protobufjs'
 import { captureException } from '@sentry/core'
 import { NodeBaseConfig } from './loadConfig'
 import { ServerOptions } from '../server'
@@ -18,10 +18,6 @@ interface GrpcClientClassOptions {
   name: string
   credentialsExternal?: typeof credentials
 }
-
-type ClientType =
-  | (typeof grpc.Client)
-  | (protobuf.rpc.Service & { create: (rpcImpl: RPCImpl) => any })
 
 let eurekaClient: Eureka
 
@@ -72,20 +68,27 @@ const DEFAULT_OPTIONS = {
   'grpc.max_receive_message_length': 8 * 1024 * 1024
 }
 
-const createGrpcClient = (Client: any, option?: GrpcClientClassOptions) => {
+const getHost = (option: GrpcClientClassOptions) => {
   const nameArr = option.name.split('/')
   const appId = nameArr[nameArr.length - 1]
-  const sslCreds = (option.credentialsExternal || credentials).createSsl(pem)
   const instances = eurekaClient.getInstancesByAppId(appId)
   const randomInstance = sample(instances)
-  const host = `${randomInstance.ipAddr}:${(randomInstance.port as any).$ + 1}`
+  return {
+    packageName: nameArr[0],
+    host: `${randomInstance.ipAddr}:${(randomInstance.port as any).$ + 1}`
+  }
+}
+
+const createGrpcClient = (Client: any, option?: GrpcClientClassOptions) => {
+  const sslCreds = (option.credentialsExternal || credentials).createSsl(pem)
 
   if (Client.create) {
     const ClientConstructor = (grpc as any).makeGenericClientConstructor({})
-    const client = new ClientConstructor(host, sslCreds, DEFAULT_OPTIONS)
     return Client.create((method: any, requestData: any, callback: any) => {
+      const { packageName, host } = getHost(option)
+      const client = new ClientConstructor(host, sslCreds, DEFAULT_OPTIONS)
       ;(client as any).makeUnaryRequest(
-        `/${nameArr[0]}/${method.name}`,
+        `/${packageName}/${method.name}`,
         (argument: any) => argument,
         (argument: any) => argument,
         requestData,
@@ -94,7 +97,7 @@ const createGrpcClient = (Client: any, option?: GrpcClientClassOptions) => {
       )
     })
   }
-  const client = new Client(host, sslCreds, DEFAULT_OPTIONS)
+  const client = new Client(getHost(option).host, sslCreds, DEFAULT_OPTIONS)
   return BPromise.promisifyAll(client)
 }
 
