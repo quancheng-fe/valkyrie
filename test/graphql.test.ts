@@ -8,7 +8,7 @@ let agent: SuperTest<Test>
 beforeAll(async () => {
   const server = await createServer({
     name: 'test-app',
-    root: resolve(__dirname, './fixture/app/resolvers'),
+    root: resolve(__dirname, './fixture/app'),
     graphqlServer: {
       introspection: true,
       playground: true
@@ -17,9 +17,22 @@ beforeAll(async () => {
   agent = request.agent(server)
 })
 
-it('will work', async () => {
-  const response = await agent.post('/graphql')
-  expect(response.text).toBe('Hello World')
-  expect(response.body).toBe('Hello World')
+const TestQueryDocument = `
+  query {
+    recipe {
+      id
+      title
+      description
+    }
+  }
+`
+
+it('query will work', async () => {
+  const response = await agent.post('/graphql').send({
+    operationName: null,
+    query: TestQueryDocument
+  })
+
   expect(response.status).toBe(200)
+  expect(response.body).toMatchSnapshot('graphql-test-query-recipe')
 })

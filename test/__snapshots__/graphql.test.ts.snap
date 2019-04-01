@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`query will work: graphql-test-query-recipe 1`] = `
+Object {
+  "data": Object {
+    "recipe": Object {
+      "description": "test",
+      "id": "1",
+      "title": "test",
+    },
+  },
+}
+`;
