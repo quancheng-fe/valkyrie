@@ -1,3 +1,4 @@
+import * as graphql from 'graphql'
 export * from 'typeorm-typedi-extensions'
 export * from 'type-graphql'
 export {
@@ -13,3 +14,4 @@ export { Context, Middleware } from 'koa'
 export { createServer } from './server'
 export { InjectGrpcService } from './lib/loadGrpc'
 export * from './types'
+export { graphql }

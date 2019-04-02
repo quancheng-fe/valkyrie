@@ -49,7 +49,7 @@ export const createServer = async (
     }
   })
 
-  logger.info('env: ', process.env)
+  logger.debug('env: ', process.env)
 
   app.logger = logger
 

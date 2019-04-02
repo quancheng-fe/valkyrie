@@ -14,7 +14,7 @@
     "@types/bluebird": "^3.5.26",
     "@types/eureka-js-client": "^4.4.2",
     "@types/google-protobuf": "^3.2.7",
-    "@types/graphql": "^14.0.7",
+    "@types/graphql": "^14.2.0",
     "@types/ioredis": "^4.0.10",
     "@types/koa": "^2.0.48",
     "@types/koa-router": "^7.0.40",
@@ -32,7 +32,8 @@
     "fs-extra": "^7.0.1",
     "globby": "^9.1.0",
     "google-protobuf": "^3.7.0",
-    "graphql": "^14.1.1",
+    "graphql": "^14.2.1",
+    "grpc": "^1.19.0",
     "ioredis": "^4.6.2",
     "ip": "^1.1.5",
     "koa": "^2.7.0",
@@ -69,7 +70,6 @@
     "@typescript-eslint/parser": "^1.4.2",
     "eslint": "^5.15.1",
     "eslint-config-prettier": "^4.1.0",
-    "grpc": "^1.19.0",
     "jest": "^24.3.1",
     "nodemon": "^1.18.10",
     "react": "^16.8.4",
@@ -82,7 +82,6 @@
     "typescript": "^3.3.3333"
   },
   "peerDependencies": {
-    "grpc": "^1.19.0",
     "react": "^16.8.4",
     "react-dom": "^16.8.4"
   }
