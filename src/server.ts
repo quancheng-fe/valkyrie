@@ -38,15 +38,14 @@ export const createServer = async (
     ACM_ENDPOINT,
     ACM_NAMESPACE,
     ACM_SECRET,
-    LOG_LEVEL
+    LOG_LEVEL,
+    NODE_ENV
   } = process.env
 
   // init Logger
   const logger = pino({
     level: LOG_LEVEL || 'info',
-    prettyPrint: {
-      levelFirst: true
-    }
+    prettyPrint: NODE_ENV !== 'production'
   })
 
   logger.debug('env: ', process.env)

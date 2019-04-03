@@ -10,7 +10,7 @@ export const loadNext: loadFromPath<null, void> = async (root, app) => {
   const koaRouter = new Router()
   const clientRoot = resolve(root, 'client')
   if (existsSync(clientRoot)) {
-    app.logger.info('page dir found, start next server')
+    app.logger.info('client folder found, ssr mode on')
     const n = next({
       dev: process.env.NODE_ENV !== 'production',
       dir: clientRoot,
@@ -26,6 +26,8 @@ export const loadNext: loadFromPath<null, void> = async (root, app) => {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { default: routeMap } = await import(resolve(root, 'routes'))
 
+      app.logger.info('customize route config found', routeMap)
+
       Object.keys(routeMap).forEach(path => {
         if (_.isObject(routeMap[path])) {
           router.add(routeMap[path])
@@ -35,7 +37,6 @@ export const loadNext: loadFromPath<null, void> = async (root, app) => {
       })
       handle = router.getRequestHandler(n)
     } catch (e) {
-      app.logger.info('no route config')
       handle = n.getRequestHandler()
     }
 

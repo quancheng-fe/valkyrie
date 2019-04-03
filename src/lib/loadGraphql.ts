@@ -44,6 +44,7 @@ export const loadGraphql: loadFromPath<Config, ApolloServer> = async (
   const gqlServer = new ApolloServer({
     schema,
     formatError: err => {
+      app.logger.error('graphql reponse error', err)
       captureException(err)
       return err
     },
